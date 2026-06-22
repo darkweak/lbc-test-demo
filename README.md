@@ -35,3 +35,10 @@ Lint:
 ```
 make lint
 ```
+
+## Environment variables
+| Name              | Description                                                                                                                             | Default value | Required                                |
+|:------------------|:----------------------------------------------------------------------------------------------------------------------------------------|:--------------|:----------------------------------------|
+| `ADDRESS`         | Define the server address                                                                                                               | `:8080`       | no                                      |
+| `ENABLE_KAFKA`    | Feature toggle to enable Kafka                                                                                                          | `false`       | no                                      |
+| `KAFKA_ADDRESSES` | Set the Kafka adresses. Set only when `ENABLE_KAFKA` is set to `true`. Format is like `localhost:29092,localhost:29094,localhost:29096` |               | only when `ENABLE_KAFKA` is set to true |
