@@ -16,20 +16,28 @@ func main() {
 	}
 
 	srv := server.NewServer(cfg)
+
+	svcStatistics := services.NewStatistics()
+
+	mux, ok := srv.Handler.(*http.ServeMux)
+	if !ok {
+		_ = srv.Close()
+
+		log.Fatal("http server does not implement http.ServeMux")
+	}
+
 	defer func() {
 		_ = srv.Close()
 	}()
 
-	svcStatistics := services.NewStatistics()
-
 	server.NewRouter(
-		srv.Handler.(*http.ServeMux),
+		mux,
 		routes.NewFizzBuzz(services.NewFizzBuzz(), svcStatistics),
 		routes.NewStatistics(svcStatistics),
 	)
 
 	err = srv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }

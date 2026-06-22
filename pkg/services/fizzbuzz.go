@@ -1,14 +1,16 @@
 package services
 
-import "fmt"
+import "strconv"
 
 type FizzBuzz interface {
 	Compute(multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) []string
 }
 
+var _ FizzBuzz = (*fizzBuzzImpl)(nil)
+
 type fizzBuzzImpl struct{}
 
-func NewFizzBuzz() FizzBuzz {
+func NewFizzBuzz() *fizzBuzzImpl {
 	return new(fizzBuzzImpl)
 }
 
@@ -17,6 +19,7 @@ func getFizzBuzzResult(current, first, second int, fizz, buzz string) string {
 		if (current % second) == 0 {
 			return fizz + buzz
 		}
+
 		return fizz
 	}
 
@@ -24,7 +27,7 @@ func getFizzBuzzResult(current, first, second int, fizz, buzz string) string {
 		return buzz
 	}
 
-	return fmt.Sprintf("%d", current)
+	return strconv.Itoa(current)
 }
 
 func (f fizzBuzzImpl) Compute(multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) []string {

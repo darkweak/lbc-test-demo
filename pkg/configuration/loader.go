@@ -20,19 +20,35 @@ func NewConfiguration() (Configuration, error) {
 	}, nil
 }
 
+type EnvVarNotSetError struct {
+	env string
+}
+
+func (e EnvVarNotSetError) Error() string {
+	return "required environment variable not set: " + e.env
+}
+
+func newErrEnvVarNotSet(env string) error {
+	return EnvVarNotSetError{
+		env: env,
+	}
+}
+
 func loadEnv[T any](name string, defaultValue T, required bool) (T, error) {
-	v, ok := os.LookupEnv(name)
+	val, ok := os.LookupEnv(name)
 	if !ok {
 		if required {
-			return defaultValue, fmt.Errorf("required environment variable not set: %s", name)
+			return defaultValue, newErrEnvVarNotSet(name)
 		}
 
 		return defaultValue, nil
 	}
 
-	switch any(defaultValue).(type) {
-	case string:
-		return any(v).(T), nil
+	if fmt.Sprintf("%T", defaultValue) == fmt.Sprintf("%T", name) {
+		typedVal, ok := any(val).(T)
+		if ok {
+			return typedVal, nil
+		}
 	}
 
 	return defaultValue, nil

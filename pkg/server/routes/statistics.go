@@ -11,16 +11,18 @@ type Statistics struct {
 	svcStatistics services.Statistics
 }
 
-func NewStatistics(svcStatistics services.Statistics) Route {
+var _ Route = (*Statistics)(nil)
+
+func NewStatistics(svcStatistics services.Statistics) *Statistics {
 	return &Statistics{
 		svcStatistics: svcStatistics,
 	}
 }
 
-func (s *Statistics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *Statistics) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 	statistic := s.svcStatistics.GetMostRecent()
 	if statistic == nil {
-		http.NotFound(w, r)
+		http.NotFound(writer, r)
 
 		return
 	}
@@ -28,13 +30,13 @@ func (s *Statistics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := json.Marshal(statistic)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		writer.WriteHeader(http.StatusInternalServerError)
 
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(body)
+	writer.WriteHeader(http.StatusOK)
+	_, _ = writer.Write(body)
 }
 
 func (s *Statistics) Register(server *http.ServeMux) {

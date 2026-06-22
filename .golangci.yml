@@ -1,0 +1,27 @@
+version: "2"
+
+issues:
+  fix: true
+
+linters:
+  default: all
+  disable:
+    - ireturn
+    - revive
+    - tagliatelle
+  settings:
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - leboncoin/pkg/configuration
+            - leboncoin/pkg/server
+            - leboncoin/pkg/server/routes
+            - leboncoin/pkg/services
+    varnamelen:
+      ignore-names:
+        - ok
+
+run:
+  timeout: 5m

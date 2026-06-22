@@ -15,20 +15,29 @@ type FizzBuzz struct {
 	svcStatistics services.Statistics
 }
 
-func NewFizzBuzz(svcFizzBuzz services.FizzBuzz, svcStatistics services.Statistics) Route {
+var _ Route = (*FizzBuzz)(nil)
+
+func NewFizzBuzz(svcFizzBuzz services.FizzBuzz, svcStatistics services.Statistics) *FizzBuzz {
 	return &FizzBuzz{
 		svcFizzBuzz:   svcFizzBuzz,
 		svcStatistics: svcStatistics,
 	}
 }
 
-func (f *FizzBuzz) fizzbuzz(w io.Writer, multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) error {
+func (f *FizzBuzz) Register(server *http.ServeMux) {
+	basepath := "/fizzbuzz"
+
+	server.HandleFunc(basepath, f.queryParams)
+	server.HandleFunc(basepath+"/{int1}/{int2}/{limit}/{str1}/{str2}", f.pathParams)
+}
+
+func (f *FizzBuzz) fizzbuzz(writer io.Writer, multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) error {
 	b, err := json.Marshal(f.svcFizzBuzz.Compute(multiplyFirst, multiplySecond, limit, fizzStr, buzzStr))
 	if err != nil {
 		return fmt.Errorf("failed to marshal fizzbuzz service: %w", err)
 	}
 
-	_, err = w.Write(b)
+	_, err = writer.Write(b)
 	if err != nil {
 		return fmt.Errorf("failed to write fizzbuzz service: %w", err)
 	}
@@ -38,79 +47,72 @@ func (f *FizzBuzz) fizzbuzz(w io.Writer, multiplyFirst, multiplySecond, limit in
 	return nil
 }
 
-func (f *FizzBuzz) queryParams(w http.ResponseWriter, r *http.Request) {
-	multiplyFirst, err := strconv.Atoi(r.URL.Query().Get("int1"))
+func (f *FizzBuzz) queryParams(writer http.ResponseWriter, request *http.Request) {
+	multiplyFirst, err := strconv.Atoi(request.URL.Query().Get("int1"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	multiplySecond, err := strconv.Atoi(r.URL.Query().Get("int2"))
+	multiplySecond, err := strconv.Atoi(request.URL.Query().Get("int2"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	limit, err := strconv.Atoi(request.URL.Query().Get("limit"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	fizzStr := r.URL.Query().Get("str1")
-	buzzStr := r.URL.Query().Get("str2")
+	fizzStr := request.URL.Query().Get("str1")
+	buzzStr := request.URL.Query().Get("str2")
 
-	err = f.fizzbuzz(w, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
+	err = f.fizzbuzz(writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
 	if err != nil {
 		log.Println("fizzbuzz failed:", err)
 
-		w.WriteHeader(http.StatusInternalServerError)
+		writer.WriteHeader(http.StatusInternalServerError)
 
 		return
 	}
 }
 
-func (f *FizzBuzz) pathParams(w http.ResponseWriter, r *http.Request) {
-	multiplyFirst, err := strconv.Atoi(r.PathValue("int1"))
+func (f *FizzBuzz) pathParams(writer http.ResponseWriter, request *http.Request) {
+	multiplyFirst, err := strconv.Atoi(request.PathValue("int1"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	multiplySecond, err := strconv.Atoi(r.PathValue("int2"))
+	multiplySecond, err := strconv.Atoi(request.PathValue("int2"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	limit, err := strconv.Atoi(r.PathValue("limit"))
+	limit, err := strconv.Atoi(request.PathValue("limit"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		writer.WriteHeader(http.StatusBadRequest)
 
 		return
 	}
 
-	fizzStr := r.URL.Query().Get("str1")
-	buzzStr := r.URL.Query().Get("str2")
+	fizzStr := request.URL.Query().Get("str1")
+	buzzStr := request.URL.Query().Get("str2")
 
-	err = f.fizzbuzz(w, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
+	err = f.fizzbuzz(writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
 	if err != nil {
 		log.Println("fizzbuzz failed:", err)
 
-		w.WriteHeader(http.StatusInternalServerError)
+		writer.WriteHeader(http.StatusInternalServerError)
 
 		return
 	}
-}
-
-func (f *FizzBuzz) Register(server *http.ServeMux) {
-	basepath := "/fizzbuzz"
-
-	server.HandleFunc(basepath, f.queryParams)
-	server.HandleFunc(basepath+"/{int1}/{int2}/{limit}/{str1}/{str2}", f.pathParams)
 }
