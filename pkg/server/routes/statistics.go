@@ -2,18 +2,18 @@ package routes
 
 import (
 	"encoding/json"
-	"leboncoin/pkg/services"
+	"leboncoin/pkg/services/statistics"
 	"log"
 	"net/http"
 )
 
 type Statistics struct {
-	svcStatistics services.Statistics
+	svcStatistics statistics.Statistics
 }
 
 var _ Route = (*Statistics)(nil)
 
-func NewStatistics(svcStatistics services.Statistics) *Statistics {
+func NewStatistics(svcStatistics statistics.Statistics) *Statistics {
 	return &Statistics{
 		svcStatistics: svcStatistics,
 	}

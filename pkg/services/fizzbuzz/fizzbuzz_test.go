@@ -1,9 +1,8 @@
-package services_test
+package fizzbuzz_test
 
 import (
+	"leboncoin/pkg/services/fizzbuzz"
 	"testing"
-
-	"leboncoin/pkg/services"
 )
 
 const (
@@ -16,7 +15,7 @@ const (
 func TestFizzBuzzComputeClassic(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 5, 15, fizzStr, buzzStr)
 
@@ -32,7 +31,7 @@ func TestFizzBuzzComputeClassic(t *testing.T) {
 func TestFizzBuzzComputeLimitOne(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	t.Run("not divisible", func(t *testing.T) {
 		t.Parallel()
@@ -59,7 +58,7 @@ func TestFizzBuzzComputeLimitOne(t *testing.T) {
 func TestFizzBuzzComputeEmptyStrings(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 3, 3, "", "")
 	assertStringSliceEqual(t, got, []string{"1", "2", ""})
@@ -68,7 +67,7 @@ func TestFizzBuzzComputeEmptyStrings(t *testing.T) {
 func TestFizzBuzzComputeCustomMultipliers(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(2, 7, 14, fizzStrCap, buzzStrCap)
 
@@ -83,7 +82,7 @@ func TestFizzBuzzComputeCustomMultipliers(t *testing.T) {
 func TestFizzBuzzComputeResultLength(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	for _, limit := range []int{1, 5, 10, 100} {
 		got := svc.Compute(3, 5, limit, fizzStr, buzzStr)
@@ -96,7 +95,7 @@ func TestFizzBuzzComputeResultLength(t *testing.T) {
 func TestFizzBuzzComputeDivisorOne(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(1, 100, 5, fizzStr, buzzStr)
 
@@ -110,7 +109,7 @@ func TestFizzBuzzComputeDivisorOne(t *testing.T) {
 func TestFizzBuzzComputeDivisibleByFirstOnly(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 5, 3, fizzStr, buzzStr)
 
@@ -122,7 +121,7 @@ func TestFizzBuzzComputeDivisibleByFirstOnly(t *testing.T) {
 func TestFizzBuzzComputeDivisibleBySecondOnly(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 5, 5, fizzStr, buzzStr)
 
@@ -134,7 +133,7 @@ func TestFizzBuzzComputeDivisibleBySecondOnly(t *testing.T) {
 func TestFizzBuzzComputeDivisibleByBoth(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 5, 15, fizzStr, buzzStr)
 
@@ -146,7 +145,7 @@ func TestFizzBuzzComputeDivisibleByBoth(t *testing.T) {
 func TestFizzBuzzComputeLargeNumber(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	got := svc.Compute(3, 5, 97, fizzStr, buzzStr)
 
@@ -158,7 +157,7 @@ func TestFizzBuzzComputeLargeNumber(t *testing.T) {
 func TestFizzBuzzImplementsInterface(t *testing.T) {
 	t.Parallel()
 
-	var _ services.FizzBuzz = services.NewFizzBuzz()
+	var _ fizzbuzz.FizzBuzz = fizzbuzz.NewFizzBuzz()
 }
 
 func assertStringSliceEqual(t *testing.T, got, want []string) {

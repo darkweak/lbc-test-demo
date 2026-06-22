@@ -2,16 +2,16 @@ package routes_test
 
 import (
 	"encoding/json"
+	"leboncoin/pkg/services/statistics"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"leboncoin/pkg/server/routes"
-	"leboncoin/pkg/services"
 )
 
-func newStatisticsMux(stats services.Statistics) *http.ServeMux {
+func newStatisticsMux(stats statistics.Statistics) *http.ServeMux {
 	mux := http.NewServeMux()
 	route := routes.NewStatistics(stats)
 	route.Register(mux)
@@ -37,7 +37,7 @@ func TestStatisticsHandlerWithData(t *testing.T) {
 	t.Parallel()
 
 	now := time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC)
-	stat := &services.Statistic{
+	stat := &statistics.Statistic{
 		LastCall: now,
 		Hit:      42,
 		Key:      "3-5-15-fizz-buzz",
@@ -53,7 +53,7 @@ func TestStatisticsHandlerWithData(t *testing.T) {
 		t.Errorf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 
-	var got services.Statistic
+	var got statistics.Statistic
 
 	err := json.Unmarshal(rec.Body.Bytes(), &got)
 	if err != nil {
@@ -72,7 +72,7 @@ func TestStatisticsHandlerWithData(t *testing.T) {
 func TestStatisticsHandlerResponseIsValidJSON(t *testing.T) {
 	t.Parallel()
 
-	stat := &services.Statistic{
+	stat := &statistics.Statistic{
 		LastCall: time.Now(),
 		Hit:      1,
 		Key:      "some-key",
@@ -96,7 +96,7 @@ func TestStatisticsHandlerJSONFieldNames(t *testing.T) {
 	t.Parallel()
 
 	now := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
-	stat := &services.Statistic{
+	stat := &statistics.Statistic{
 		LastCall: now,
 		Hit:      7,
 		Key:      "1-2-10-foo-bar",

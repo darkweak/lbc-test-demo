@@ -2,11 +2,10 @@ package routes_test
 
 import (
 	"context"
+	"leboncoin/pkg/services/fizzbuzz"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"leboncoin/pkg/services"
 )
 
 const (
@@ -41,7 +40,7 @@ func BenchmarkFizzBuzzHandlerQueryParams(b *testing.B) {
 		b.Run(benchCase.name, func(b *testing.B) {
 			mux := newFizzBuzzMux(
 				&stubFizzBuzz{result: benchCase.stub},
-				&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+				&stubProducer{produced: nil, produceErr: nil},
 			)
 
 			req := httptest.NewRequestWithContext(
@@ -81,7 +80,7 @@ func BenchmarkFizzBuzzHandlerPathParams(b *testing.B) {
 		b.Run(benchCase.name, func(b *testing.B) {
 			mux := newFizzBuzzMux(
 				&stubFizzBuzz{result: benchCase.stub},
-				&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+				&stubProducer{produced: nil, produceErr: nil},
 			)
 
 			req := httptest.NewRequestWithContext(
@@ -111,7 +110,7 @@ func makeStubResult(count int) []string {
 func BenchmarkFizzBuzzHandlerBadRequest(b *testing.B) {
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -142,8 +141,8 @@ func BenchmarkFizzBuzzHandlerQueryParamsRealService(b *testing.B) {
 	for _, benchCase := range benchCases {
 		b.Run(benchCase.name, func(b *testing.B) {
 			mux := newFizzBuzzMux(
-				services.NewFizzBuzz(),
-				&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+				fizzbuzz.NewFizzBuzz(),
+				&stubProducer{produced: nil, produceErr: nil},
 			)
 
 			req := httptest.NewRequestWithContext(

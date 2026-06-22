@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"leboncoin/pkg/services"
+	"leboncoin/pkg/services/fizzbuzz"
+	"leboncoin/pkg/services/pubsub"
 	"log"
 	"net/http"
 	"strconv"
 )
 
 type FizzBuzz struct {
-	svcFizzBuzz   services.FizzBuzz
-	svcStatistics services.Statistics
+	svcFizzBuzz fizzbuzz.FizzBuzz
+	producer    pubsub.Producer
 }
 
 var _ Route = (*FizzBuzz)(nil)
 
-func NewFizzBuzz(svcFizzBuzz services.FizzBuzz, svcStatistics services.Statistics) *FizzBuzz {
+func NewFizzBuzz(svcFizzBuzz fizzbuzz.FizzBuzz, producer pubsub.Producer) *FizzBuzz {
 	return &FizzBuzz{
-		svcFizzBuzz:   svcFizzBuzz,
-		svcStatistics: svcStatistics,
+		svcFizzBuzz: svcFizzBuzz,
+		producer:    producer,
 	}
 }
 
@@ -32,17 +33,31 @@ func (f *FizzBuzz) Register(server *http.ServeMux) {
 }
 
 func (f *FizzBuzz) fizzbuzz(writer io.Writer, multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) error {
-	b, err := json.Marshal(f.svcFizzBuzz.Compute(multiplyFirst, multiplySecond, limit, fizzStr, buzzStr))
+	result, err := json.Marshal(f.svcFizzBuzz.Compute(multiplyFirst, multiplySecond, limit, fizzStr, buzzStr))
 	if err != nil {
 		return fmt.Errorf("failed to marshal fizzbuzz service: %w", err)
 	}
 
-	_, err = writer.Write(b)
+	err = f.producer.Produce(
+		[]byte(
+			fmt.Sprintf(
+				"%d-%d-%d-%s-%s",
+				multiplyFirst,
+				multiplySecond,
+				limit,
+				fizzStr,
+				buzzStr,
+			),
+		),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to produce fizzbuzz message: %w", err)
+	}
+
+	_, err = writer.Write(result)
 	if err != nil {
 		return fmt.Errorf("failed to write fizzbuzz service: %w", err)
 	}
-
-	f.svcStatistics.Increment(fmt.Sprintf("%d-%d-%d-%s-%s", multiplyFirst, multiplySecond, limit, fizzStr, buzzStr))
 
 	return nil
 }

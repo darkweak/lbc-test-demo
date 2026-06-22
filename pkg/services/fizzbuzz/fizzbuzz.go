@@ -1,6 +1,8 @@
-package services
+package fizzbuzz
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type FizzBuzz interface {
 	Compute(multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) []string

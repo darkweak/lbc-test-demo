@@ -13,12 +13,31 @@ linters:
     depguard:
       rules:
         main:
+          files:
+            - "!**/*_test.go"
           allow:
             - $gostd
             - leboncoin/pkg/configuration
             - leboncoin/pkg/server
             - leboncoin/pkg/server/routes
             - leboncoin/pkg/services
+            - github.com/segmentio/kafka-go
+            - github.com/google/uuid
+        tests:
+          files:
+            - "**/*_test.go"
+          allow:
+            - $gostd
+            - leboncoin/pkg/configuration
+            - leboncoin/pkg/server
+            - leboncoin/pkg/server/routes
+            - leboncoin/pkg/services
+            - github.com/segmentio/kafka-go
+            - github.com/testcontainers/testcontainers-go
+    exhaustruct:
+      exclude:
+        # External packages: filling every optional field is impractical.
+        - "^github\\.com/segmentio/kafka-go\\..*"
     varnamelen:
       ignore-names:
         - ok

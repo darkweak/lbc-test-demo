@@ -9,6 +9,7 @@ import (
 
 func TestNewConfigurationWithAddressEnvSet(t *testing.T) {
 	t.Setenv("ADDRESS", ":9090")
+	t.Setenv("KAFKA_ADDRESSES", ":9090")
 
 	cfg, err := configuration.NewConfiguration()
 	if err != nil {
@@ -22,6 +23,7 @@ func TestNewConfigurationWithAddressEnvSet(t *testing.T) {
 
 func TestNewConfigurationWithAddressEmptyString(t *testing.T) {
 	t.Setenv("ADDRESS", "")
+	t.Setenv("KAFKA_ADDRESSES", "")
 
 	cfg, err := configuration.NewConfiguration()
 	if err != nil {

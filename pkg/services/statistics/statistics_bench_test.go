@@ -1,16 +1,15 @@
-package services_test
+package statistics_test
 
 import (
 	"fmt"
+	"leboncoin/pkg/services/statistics"
 	"testing"
-
-	"leboncoin/pkg/services"
 )
 
 func BenchmarkStatisticsIncrement(b *testing.B) {
 	b.ReportAllocs()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment("bench-key")
 	svc.Increment("bench-key")
@@ -32,7 +31,7 @@ func BenchmarkStatisticsIncrementManyKeys(b *testing.B) {
 
 	b.ReportAllocs()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	b.ResetTimer()
 
@@ -44,13 +43,13 @@ func BenchmarkStatisticsIncrementManyKeys(b *testing.B) {
 func BenchmarkStatisticsGetMostRecent(b *testing.B) {
 	b.ReportAllocs()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 	svc.Increment("bench-key")
 	svc.Increment("bench-key")
 
 	b.ResetTimer()
 
-	var result *services.Statistic
+	var result *statistics.Statistic
 
 	for b.Loop() {
 		result = svc.GetMostRecent()
@@ -62,7 +61,7 @@ func BenchmarkStatisticsGetMostRecent(b *testing.B) {
 func BenchmarkStatisticsIncrementParallel(b *testing.B) {
 	b.ReportAllocs()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment("shared-key")
 	svc.Increment("shared-key")
@@ -86,7 +85,7 @@ func BenchmarkStatisticsIncrementParallelManyKeys(b *testing.B) {
 
 	b.ReportAllocs()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	b.ResetTimer()
 

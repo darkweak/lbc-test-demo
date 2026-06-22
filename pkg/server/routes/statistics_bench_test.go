@@ -2,12 +2,11 @@ package routes_test
 
 import (
 	"context"
+	"leboncoin/pkg/services/statistics"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"leboncoin/pkg/services"
 )
 
 const benchStatKey = "3-5-15-fizz-buzz"
@@ -26,7 +25,7 @@ func BenchmarkStatisticsHandlerNoData(b *testing.B) {
 }
 
 func BenchmarkStatisticsHandlerWithData(b *testing.B) {
-	stat := &services.Statistic{
+	stat := &statistics.Statistic{
 		LastCall: time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC),
 		Hit:      42,
 		Key:      benchStatKey,
@@ -45,7 +44,7 @@ func BenchmarkStatisticsHandlerWithData(b *testing.B) {
 }
 
 func BenchmarkStatisticsHandlerWithDataParallel(b *testing.B) {
-	stat := &services.Statistic{
+	stat := &statistics.Statistic{
 		LastCall: time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC),
 		Hit:      42,
 		Key:      benchStatKey,
@@ -66,7 +65,7 @@ func BenchmarkStatisticsHandlerWithDataParallel(b *testing.B) {
 }
 
 func BenchmarkStatisticsHandlerRealService(b *testing.B) {
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 	svc.Increment(benchStatKey)
 	svc.Increment(benchStatKey)
 

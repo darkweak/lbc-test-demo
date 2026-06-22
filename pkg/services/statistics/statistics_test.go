@@ -1,11 +1,10 @@
-package services_test
+package statistics_test
 
 import (
+	"leboncoin/pkg/services/statistics"
 	"sync"
 	"testing"
 	"time"
-
-	"leboncoin/pkg/services"
 )
 
 const testKey1 = "key1"
@@ -13,7 +12,7 @@ const testKey1 = "key1"
 func TestStatisticsGetMostRecentEmpty(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	got := svc.GetMostRecent()
 	if got != nil {
@@ -24,7 +23,7 @@ func TestStatisticsGetMostRecentEmpty(t *testing.T) {
 func TestStatisticsGetMostRecentAfterOnlyOneIncrementIsNil(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 	svc.Increment(testKey1)
 
 	got := svc.GetMostRecent()
@@ -36,7 +35,7 @@ func TestStatisticsGetMostRecentAfterOnlyOneIncrementIsNil(t *testing.T) {
 func TestStatisticsIncrementSecondCallSetsMaxHit(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	before := time.Now()
 
@@ -66,7 +65,7 @@ func TestStatisticsIncrementSecondCallSetsMaxHit(t *testing.T) {
 func TestStatisticsIncrementUpdatesHit(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment(testKey1)
 	svc.Increment(testKey1)
@@ -89,7 +88,7 @@ func TestStatisticsIncrementUpdatesHit(t *testing.T) {
 func TestStatisticsIncrementUpdatesLastCall(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment(testKey1)
 
@@ -112,7 +111,7 @@ func TestStatisticsIncrementUpdatesLastCall(t *testing.T) {
 func TestStatisticsMostRecentTracksMaxHit(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment(testKey1)
 	svc.Increment(testKey1)
@@ -137,7 +136,7 @@ func TestStatisticsMostRecentTracksMaxHit(t *testing.T) {
 func TestStatisticsMostRecentStaysWhenNewKeyHasFewerHits(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	for range 5 {
 		svc.Increment(testKey1)
@@ -158,7 +157,7 @@ func TestStatisticsMostRecentStaysWhenNewKeyHasFewerHits(t *testing.T) {
 func TestStatisticsMostRecentSwitchesToNewLeader(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment("keyA")
 	svc.Increment("keyA")
@@ -180,7 +179,7 @@ func TestStatisticsMostRecentSwitchesToNewLeader(t *testing.T) {
 func TestStatisticsMultipleKeysFirstCallEachReturnsNil(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	for _, key := range []string{"alpha", "beta", "gamma"} {
 		svc.Increment(key)
@@ -195,7 +194,7 @@ func TestStatisticsMultipleKeysFirstCallEachReturnsNil(t *testing.T) {
 func TestStatisticsMultipleKeysOneIncrementedTwice(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	svc.Increment("alpha")
 	svc.Increment("beta")
@@ -218,7 +217,7 @@ func TestStatisticsMultipleKeysOneIncrementedTwice(t *testing.T) {
 func TestStatisticsConcurrentIncrement(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewStatistics()
+	svc := statistics.NewStatistics()
 
 	const (
 		goroutines = 50
@@ -260,5 +259,5 @@ func TestStatisticsConcurrentIncrement(t *testing.T) {
 func TestStatisticsImplementsInterface(t *testing.T) {
 	t.Parallel()
 
-	var _ services.Statistics = services.NewStatistics()
+	var _ statistics.Statistics = statistics.NewStatistics()
 }

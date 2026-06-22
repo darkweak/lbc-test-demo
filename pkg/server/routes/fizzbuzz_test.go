@@ -2,19 +2,19 @@ package routes_test
 
 import (
 	"encoding/json"
+	"leboncoin/pkg/server/routes"
+	"leboncoin/pkg/services/fizzbuzz"
+	"leboncoin/pkg/services/pubsub"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"leboncoin/pkg/server/routes"
-	"leboncoin/pkg/services"
 )
 
 const stubFizzResult = "fizz"
 
-func newFizzBuzzMux(fb services.FizzBuzz, stats services.Statistics) *http.ServeMux {
+func newFizzBuzzMux(fb fizzbuzz.FizzBuzz, producer pubsub.Producer) *http.ServeMux {
 	mux := http.NewServeMux()
-	route := routes.NewFizzBuzz(fb, stats)
+	route := routes.NewFizzBuzz(fb, producer)
 	route.Register(mux)
 
 	return mux
@@ -24,8 +24,8 @@ func TestFizzBuzzQueryParamsHappyPath(t *testing.T) {
 	t.Parallel()
 
 	fbStub := &stubFizzBuzz{result: []string{"1", "2", stubFizzResult}}
-	statsStub := &stubStatistics{incrementedKeys: nil, mostRecent: nil}
-	mux := newFizzBuzzMux(fbStub, statsStub)
+	producer := &stubProducer{produced: nil, produceErr: nil}
+	mux := newFizzBuzzMux(fbStub, producer)
 
 	req := httptest.NewRequestWithContext(
 		t.Context(), http.MethodGet,
@@ -63,7 +63,7 @@ func TestFizzBuzzQueryParamsMissingInt1(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -84,7 +84,7 @@ func TestFizzBuzzQueryParamsMissingInt2(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -105,7 +105,7 @@ func TestFizzBuzzQueryParamsMissingLimit(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -126,7 +126,7 @@ func TestFizzBuzzQueryParamsInvalidInt1(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -147,7 +147,7 @@ func TestFizzBuzzQueryParamsInvalidInt2(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -168,7 +168,7 @@ func TestFizzBuzzQueryParamsInvalidLimit(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -184,12 +184,12 @@ func TestFizzBuzzQueryParamsInvalidLimit(t *testing.T) {
 	}
 }
 
-func TestFizzBuzzQueryParamsIncrementsStatistics(t *testing.T) {
+func TestFizzBuzzQueryParamsProducesMessage(t *testing.T) {
 	t.Parallel()
 
 	fbStub := &stubFizzBuzz{result: []string{"1", "2", stubFizzResult}}
-	statsStub := &stubStatistics{incrementedKeys: nil, mostRecent: nil}
-	mux := newFizzBuzzMux(fbStub, statsStub)
+	producer := &stubProducer{produced: nil, produceErr: nil}
+	mux := newFizzBuzzMux(fbStub, producer)
 
 	req := httptest.NewRequestWithContext(
 		t.Context(), http.MethodGet,
@@ -203,13 +203,13 @@ func TestFizzBuzzQueryParamsIncrementsStatistics(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 
-	if len(statsStub.incrementedKeys) != 1 {
-		t.Fatalf("Increment called %d times, want 1", len(statsStub.incrementedKeys))
+	if len(producer.produced) != 1 {
+		t.Fatalf("Produce called %d times, want 1", len(producer.produced))
 	}
 
-	wantKey := "3-5-3-fizz-buzz"
-	if statsStub.incrementedKeys[0] != wantKey {
-		t.Errorf("Increment key = %q, want %q", statsStub.incrementedKeys[0], wantKey)
+	wantMsg := "3-5-3-fizz-buzz"
+	if string(producer.produced[0]) != wantMsg {
+		t.Errorf("produced message = %q, want %q", string(producer.produced[0]), wantMsg)
 	}
 }
 
@@ -217,8 +217,8 @@ func TestFizzBuzzPathParamsHappyPath(t *testing.T) {
 	t.Parallel()
 
 	fbStub := &stubFizzBuzz{result: []string{"1", "2", stubFizzResult, "4", "buzz"}}
-	statsStub := &stubStatistics{incrementedKeys: nil, mostRecent: nil}
-	mux := newFizzBuzzMux(fbStub, statsStub)
+	producer := &stubProducer{produced: nil, produceErr: nil}
+	mux := newFizzBuzzMux(fbStub, producer)
 
 	req := httptest.NewRequestWithContext(
 		t.Context(), http.MethodGet,
@@ -249,7 +249,7 @@ func TestFizzBuzzPathParamsInvalidInt1(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -270,7 +270,7 @@ func TestFizzBuzzPathParamsInvalidInt2(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -291,7 +291,7 @@ func TestFizzBuzzPathParamsInvalidLimit(t *testing.T) {
 
 	mux := newFizzBuzzMux(
 		&stubFizzBuzz{result: nil},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 
 	req := httptest.NewRequestWithContext(
@@ -311,8 +311,8 @@ func TestFizzBuzzPathParamsStr1Str2FromQueryString(t *testing.T) {
 	t.Parallel()
 
 	fbStub := &stubFizzBuzz{result: []string{stubFizzResult}}
-	statsStub := &stubStatistics{incrementedKeys: nil, mostRecent: nil}
-	mux := newFizzBuzzMux(fbStub, statsStub)
+	producer := &stubProducer{produced: nil, produceErr: nil}
+	mux := newFizzBuzzMux(fbStub, producer)
 
 	req := httptest.NewRequestWithContext(
 		t.Context(), http.MethodGet,
@@ -326,23 +326,22 @@ func TestFizzBuzzPathParamsStr1Str2FromQueryString(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 
-	wantKey := "3-5-1-foo-bar"
-
-	if len(statsStub.incrementedKeys) == 0 {
-		t.Fatal("Increment was not called")
+	if len(producer.produced) == 0 {
+		t.Fatal("Produce was not called")
 	}
 
-	if statsStub.incrementedKeys[0] != wantKey {
-		t.Errorf("Increment key = %q, want %q", statsStub.incrementedKeys[0], wantKey)
+	wantMsg := "3-5-1-foo-bar"
+	if string(producer.produced[0]) != wantMsg {
+		t.Errorf("produced message = %q, want %q", string(producer.produced[0]), wantMsg)
 	}
 }
 
-func TestFizzBuzzPathParamsIncrementsStatistics(t *testing.T) {
+func TestFizzBuzzPathParamsProducesMessage(t *testing.T) {
 	t.Parallel()
 
 	fbStub := &stubFizzBuzz{result: []string{"1"}}
-	statsStub := &stubStatistics{incrementedKeys: nil, mostRecent: nil}
-	mux := newFizzBuzzMux(fbStub, statsStub)
+	producer := &stubProducer{produced: nil, produceErr: nil}
+	mux := newFizzBuzzMux(fbStub, producer)
 
 	req := httptest.NewRequestWithContext(
 		t.Context(), http.MethodGet,
@@ -356,8 +355,48 @@ func TestFizzBuzzPathParamsIncrementsStatistics(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
 
-	if len(statsStub.incrementedKeys) != 1 {
-		t.Fatalf("Increment called %d times, want 1", len(statsStub.incrementedKeys))
+	if len(producer.produced) != 1 {
+		t.Fatalf("Produce called %d times, want 1", len(producer.produced))
+	}
+}
+
+func TestFizzBuzzQueryParamsProduceErrorReturns500(t *testing.T) {
+	t.Parallel()
+
+	fbStub := &stubFizzBuzz{result: []string{"1", "2", "fizz"}}
+	producer := &stubProducer{produced: nil, produceErr: errProduceFailed}
+	mux := newFizzBuzzMux(fbStub, producer)
+
+	req := httptest.NewRequestWithContext(
+		t.Context(), http.MethodGet,
+		"/fizzbuzz?int1=3&int2=5&limit=3&str1=fizz&str2=buzz",
+		nil,
+	)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestFizzBuzzPathParamsProduceErrorReturns500(t *testing.T) {
+	t.Parallel()
+
+	fbStub := &stubFizzBuzz{result: []string{"1"}}
+	producer := &stubProducer{produced: nil, produceErr: errProduceFailed}
+	mux := newFizzBuzzMux(fbStub, producer)
+
+	req := httptest.NewRequestWithContext(
+		t.Context(), http.MethodGet,
+		"/fizzbuzz/3/5/1/fizz/buzz?str1=fizz&str2=buzz",
+		nil,
+	)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
 	}
 }
 
@@ -367,7 +406,7 @@ func TestFizzBuzzRegisterQueryParamRoute(t *testing.T) {
 	mux := http.NewServeMux()
 	route := routes.NewFizzBuzz(
 		&stubFizzBuzz{result: []string{}},
-		&stubStatistics{incrementedKeys: nil, mostRecent: nil},
+		&stubProducer{produced: nil, produceErr: nil},
 	)
 	route.Register(mux)
 

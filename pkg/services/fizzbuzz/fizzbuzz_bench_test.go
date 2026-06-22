@@ -1,9 +1,8 @@
-package services_test
+package fizzbuzz_test
 
 import (
+	"leboncoin/pkg/services/fizzbuzz"
 	"testing"
-
-	"leboncoin/pkg/services"
 )
 
 func BenchmarkFizzBuzzCompute(b *testing.B) {
@@ -16,7 +15,7 @@ func BenchmarkFizzBuzzCompute(b *testing.B) {
 		{"large/limit=100000", 100_000},
 	}
 
-	svc := services.NewFizzBuzz()
+	svc := fizzbuzz.NewFizzBuzz()
 
 	for _, benchCase := range cases {
 		b.Run(benchCase.name, func(b *testing.B) {
