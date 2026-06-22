@@ -13,3 +13,6 @@ prepare:
 
 run:
 	go run ./cmd
+
+tests:
+	go test -v ./...

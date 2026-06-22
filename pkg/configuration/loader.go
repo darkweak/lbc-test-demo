@@ -28,7 +28,7 @@ func (e EnvVarNotSetError) Error() string {
 	return "required environment variable not set: " + e.env
 }
 
-func newErrEnvVarNotSet(env string) error {
+func NewErrEnvVarNotSet(env string) error {
 	return EnvVarNotSetError{
 		env: env,
 	}
@@ -38,7 +38,7 @@ func loadEnv[T any](name string, defaultValue T, required bool) (T, error) {
 	val, ok := os.LookupEnv(name)
 	if !ok {
 		if required {
-			return defaultValue, newErrEnvVarNotSet(name)
+			return defaultValue, NewErrEnvVarNotSet(name)
 		}
 
 		return defaultValue, nil
