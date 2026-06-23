@@ -3,6 +3,7 @@ package main
 import (
 	"leboncoin/pkg/configuration"
 	"leboncoin/pkg/server"
+	"leboncoin/pkg/server/middleware"
 	"leboncoin/pkg/server/routes"
 	"leboncoin/pkg/services/fizzbuzz"
 	"leboncoin/pkg/services/pubsub"
@@ -13,7 +14,12 @@ import (
 	"net/http"
 )
 
-func getPubsub(cfg configuration.Configuration) (fizzBuzzConsumer pubsub.Consumer, fizzBuzzProducer pubsub.Producer) {
+func getPubsub(cfg configuration.Configuration) (pubsub.Consumer, pubsub.Producer) {
+	var (
+		fizzBuzzConsumer pubsub.Consumer
+		fizzBuzzProducer pubsub.Producer
+	)
+
 	if cfg.FTKafka {
 		topic := "my-topic"
 
@@ -26,7 +32,7 @@ func getPubsub(cfg configuration.Configuration) (fizzBuzzConsumer pubsub.Consume
 		fizzBuzzConsumer = consumer.NewBasicConsumer(fizzbuzzQueue)
 	}
 
-	return
+	return fizzBuzzConsumer, fizzBuzzProducer
 }
 
 func main() {
@@ -35,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	srv := server.NewServer(cfg)
+	srv := server.NewServer(cfg, middleware.CorrelationID)
 
 	mux, ok := srv.Handler.(*http.ServeMux)
 	if !ok {

@@ -1,6 +1,9 @@
 package pubsub
 
-import "io"
+import (
+	"context"
+	"io"
+)
 
 type Message struct {
 	Payload []byte `json:"payload"`
@@ -9,7 +12,7 @@ type Message struct {
 type Producer interface {
 	io.Closer
 
-	Produce(message []byte) error
+	Produce(ctx context.Context, message []byte) error
 }
 
 type Consumer interface {

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -32,22 +33,26 @@ func (f *FizzBuzz) Register(server *http.ServeMux) {
 	server.HandleFunc(basepath+"/{int1}/{int2}/{limit}/{str1}/{str2}", f.pathParams)
 }
 
-func (f *FizzBuzz) fizzbuzz(writer io.Writer, multiplyFirst, multiplySecond, limit int, fizzStr, buzzStr string) error {
+func (f *FizzBuzz) fizzbuzz(
+	ctx context.Context,
+	writer io.Writer,
+	multiplyFirst, multiplySecond, limit int,
+	fizzStr, buzzStr string,
+) error {
 	result, err := json.Marshal(f.svcFizzBuzz.Compute(multiplyFirst, multiplySecond, limit, fizzStr, buzzStr))
 	if err != nil {
 		return fmt.Errorf("failed to marshal fizzbuzz service: %w", err)
 	}
 
 	err = f.producer.Produce(
-		[]byte(
-			fmt.Sprintf(
-				"%d-%d-%d-%s-%s",
-				multiplyFirst,
-				multiplySecond,
-				limit,
-				fizzStr,
-				buzzStr,
-			),
+		ctx,
+		fmt.Appendf(nil,
+			"%d-%d-%d-%s-%s",
+			multiplyFirst,
+			multiplySecond,
+			limit,
+			fizzStr,
+			buzzStr,
 		),
 	)
 	if err != nil {
@@ -87,7 +92,7 @@ func (f *FizzBuzz) queryParams(writer http.ResponseWriter, request *http.Request
 	fizzStr := request.URL.Query().Get("str1")
 	buzzStr := request.URL.Query().Get("str2")
 
-	err = f.fizzbuzz(writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
+	err = f.fizzbuzz(request.Context(), writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
 	if err != nil {
 		log.Println("fizzbuzz failed:", err)
 
@@ -122,7 +127,7 @@ func (f *FizzBuzz) pathParams(writer http.ResponseWriter, request *http.Request)
 	fizzStr := request.URL.Query().Get("str1")
 	buzzStr := request.URL.Query().Get("str2")
 
-	err = f.fizzbuzz(writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
+	err = f.fizzbuzz(request.Context(), writer, multiplyFirst, multiplySecond, limit, fizzStr, buzzStr)
 	if err != nil {
 		log.Println("fizzbuzz failed:", err)
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"leboncoin/pkg/server/middleware"
 	"leboncoin/pkg/services/pubsub"
 
-	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -27,17 +27,19 @@ func NewKafkaProducer(hosts []string, topic string) *kafkaProducer {
 	}
 }
 
-func (k kafkaProducer) Produce(message []byte) error {
+func (k kafkaProducer) Produce(ctx context.Context, message []byte) error {
 	value, err := json.Marshal(pubsub.Message{Payload: message})
 	if err != nil {
 		return fmt.Errorf("marshal kafka message: %w", err)
 	}
 
-	err = k.writer.WriteMessages(context.Background(), kafka.Message{
+	correlationID, _ := ctx.Value(middleware.CorrelationIDCtxKey).(string)
+
+	err = k.writer.WriteMessages(ctx, kafka.Message{
 		Value: value,
 		Headers: []kafka.Header{{
 			Key:   "Correlation-ID",
-			Value: []byte(uuid.New().String()),
+			Value: []byte(correlationID),
 		}},
 	})
 	if err != nil {

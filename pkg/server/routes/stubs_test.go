@@ -1,6 +1,7 @@
 package routes_test
 
 import (
+	"context"
 	"errors"
 	"leboncoin/pkg/services/statistics"
 )
@@ -27,11 +28,11 @@ func (stub *stubStatistics) Increment(key string) {
 }
 
 type stubProducer struct {
-	produced  [][]byte
+	produced   [][]byte
 	produceErr error
 }
 
-func (s *stubProducer) Produce(message []byte) error {
+func (s *stubProducer) Produce(_ context.Context, message []byte) error {
 	if s.produceErr != nil {
 		return s.produceErr
 	}

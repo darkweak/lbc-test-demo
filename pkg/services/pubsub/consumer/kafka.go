@@ -30,6 +30,7 @@ func NewKafkaConsumer(hosts []string, topic string) *kafkaConsumer {
 
 func (k kafkaConsumer) Consume(callback func(message pubsub.Message) error) error {
 	ctx := context.Background()
+
 	for {
 		kafkaMsg, err := k.reader.FetchMessage(ctx)
 		if err != nil {

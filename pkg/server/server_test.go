@@ -8,11 +8,18 @@ import (
 	"leboncoin/pkg/server"
 )
 
+func getDefaultConfiguration(address string) configuration.Configuration {
+	return configuration.Configuration{
+		Address:        address,
+		FTKafka:        false,
+		KafkaAddresses: nil,
+	}
+}
+
 func TestNewServerSetsAddress(t *testing.T) {
 	t.Parallel()
 
-	cfg := configuration.Configuration{Address: ":9999"}
-	srv := server.NewServer(cfg)
+	srv := server.NewServer(getDefaultConfiguration(":9999"))
 
 	if srv.Addr != ":9999" {
 		t.Errorf("srv.Addr = %q, want %q", srv.Addr, ":9999")
@@ -22,8 +29,7 @@ func TestNewServerSetsAddress(t *testing.T) {
 func TestNewServerHandlerIsServeMux(t *testing.T) {
 	t.Parallel()
 
-	cfg := configuration.Configuration{Address: ":8080"}
-	srv := server.NewServer(cfg)
+	srv := server.NewServer(getDefaultConfiguration(":8080"))
 
 	if _, ok := srv.Handler.(*http.ServeMux); !ok {
 		t.Errorf("srv.Handler is %T, want *http.ServeMux", srv.Handler)
@@ -33,8 +39,7 @@ func TestNewServerHandlerIsServeMux(t *testing.T) {
 func TestNewServerReturnsHTTPServer(t *testing.T) {
 	t.Parallel()
 
-	cfg := configuration.Configuration{Address: ":8080"}
-	srv := server.NewServer(cfg)
+	srv := server.NewServer(getDefaultConfiguration(":8080"))
 
 	if srv == nil {
 		t.Fatal("NewServer() = nil, want *http.Server")

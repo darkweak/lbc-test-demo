@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"context"
 	"leboncoin/pkg/services/pubsub"
 )
 
@@ -16,7 +17,7 @@ func NewBasicProducer(queue chan pubsub.Message) *basicProducer {
 	}
 }
 
-func (k basicProducer) Produce(message []byte) error {
+func (k basicProducer) Produce(ctx context.Context, message []byte) error {
 	k.queue <- pubsub.Message{Payload: message}
 
 	return nil

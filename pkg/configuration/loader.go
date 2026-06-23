@@ -14,7 +14,11 @@ type Configuration struct {
 }
 
 func NewConfiguration() (Configuration, error) {
-	cfg := Configuration{}
+	cfg := Configuration{
+		Address:        "",
+		FTKafka:        false,
+		KafkaAddresses: nil,
+	}
 
 	var err error
 
@@ -52,6 +56,34 @@ func NewErrEnvVarNotSet(env string) error {
 	}
 }
 
+func parseValue[T any](val string, defaultValue T) T {
+	switch any(defaultValue).(type) {
+	case string:
+		typedVal, ok := any(val).(T)
+		if ok {
+			return typedVal
+		}
+	case bool:
+		typedVal, err := strconv.ParseBool(val)
+		if err == nil {
+			parsed, ok := any(typedVal).(T)
+			if ok {
+				return parsed
+			}
+		}
+	case []string:
+		str, ok := any(val).(string)
+		if ok {
+			strArr, ok := any(strings.Split(str, ",")).(T)
+			if ok {
+				return strArr
+			}
+		}
+	}
+
+	return defaultValue
+}
+
 func loadEnv[T any](name string, defaultValue T, required bool) (T, error) {
 	val, ok := os.LookupEnv(name)
 	if !ok {
@@ -62,25 +94,5 @@ func loadEnv[T any](name string, defaultValue T, required bool) (T, error) {
 		return defaultValue, nil
 	}
 
-	switch any(defaultValue).(type) {
-	case string:
-		typedVal, ok := any(val).(T)
-		if ok {
-			return typedVal, nil
-		}
-	case bool:
-		typedVal, err := strconv.ParseBool(val)
-		if err == nil {
-			return any(typedVal).(T), nil
-		}
-	case []string:
-		str, ok := any(val).(string)
-		if ok {
-			return any(strings.Split(str, ",")).(T), nil
-		}
-
-		return defaultValue, nil
-	}
-
-	return defaultValue, nil
+	return parseValue(val, defaultValue), nil
 }

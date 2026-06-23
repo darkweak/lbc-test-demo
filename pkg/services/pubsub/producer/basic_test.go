@@ -17,7 +17,7 @@ func TestBasicProducerSendsMessageToChannel(t *testing.T) {
 
 	payload := []byte("hello")
 
-	err := p.Produce(payload)
+	err := p.Produce(t.Context(), payload)
 	if err != nil {
 		t.Fatalf("Produce returned unexpected error: %v", err)
 	}
