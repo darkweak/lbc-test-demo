@@ -1,7 +1,6 @@
 package routes_test
 
 import (
-	"context"
 	"leboncoin/pkg/services/statistics"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,7 @@ const benchStatKey = "3-5-15-fizz-buzz"
 
 func BenchmarkStatisticsHandlerNoData(b *testing.B) {
 	mux := newStatisticsMux(&stubStatistics{incrementedKeys: nil, mostRecent: nil})
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/statistics", nil)
+	req := httptest.NewRequestWithContext(b.Context(), http.MethodGet, "/statistics", nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -32,7 +31,7 @@ func BenchmarkStatisticsHandlerWithData(b *testing.B) {
 	}
 
 	mux := newStatisticsMux(&stubStatistics{incrementedKeys: nil, mostRecent: stat})
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/statistics", nil)
+	req := httptest.NewRequestWithContext(b.Context(), http.MethodGet, "/statistics", nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -51,7 +50,7 @@ func BenchmarkStatisticsHandlerWithDataParallel(b *testing.B) {
 	}
 
 	mux := newStatisticsMux(&stubStatistics{incrementedKeys: nil, mostRecent: stat})
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/statistics", nil)
+	req := httptest.NewRequestWithContext(b.Context(), http.MethodGet, "/statistics", nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -70,7 +69,7 @@ func BenchmarkStatisticsHandlerRealService(b *testing.B) {
 	svc.Increment(benchStatKey)
 
 	mux := newStatisticsMux(svc)
-	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/statistics", nil)
+	req := httptest.NewRequestWithContext(b.Context(), http.MethodGet, "/statistics", nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()

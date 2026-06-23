@@ -1,7 +1,6 @@
 package routes_test
 
 import (
-	"context"
 	"leboncoin/pkg/services/fizzbuzz"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +43,7 @@ func BenchmarkFizzBuzzHandlerQueryParams(b *testing.B) {
 			)
 
 			req := httptest.NewRequestWithContext(
-				context.Background(), http.MethodGet, benchCase.url, nil,
+				b.Context(), http.MethodGet, benchCase.url, nil,
 			)
 
 			b.ReportAllocs()
@@ -84,7 +83,7 @@ func BenchmarkFizzBuzzHandlerPathParams(b *testing.B) {
 			)
 
 			req := httptest.NewRequestWithContext(
-				context.Background(), http.MethodGet, benchCase.url, nil,
+				b.Context(), http.MethodGet, benchCase.url, nil,
 			)
 
 			b.ReportAllocs()
@@ -114,7 +113,7 @@ func BenchmarkFizzBuzzHandlerBadRequest(b *testing.B) {
 	)
 
 	req := httptest.NewRequestWithContext(
-		context.Background(),
+		b.Context(),
 		http.MethodGet,
 		"/fizzbuzz?int2=5&limit=15&str1=fizz&str2=buzz",
 		nil,
@@ -146,7 +145,7 @@ func BenchmarkFizzBuzzHandlerQueryParamsRealService(b *testing.B) {
 			)
 
 			req := httptest.NewRequestWithContext(
-				context.Background(), http.MethodGet, benchCase.url, nil,
+				b.Context(), http.MethodGet, benchCase.url, nil,
 			)
 
 			b.ReportAllocs()
